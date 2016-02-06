@@ -162,8 +162,8 @@ cprequire_test(["inline:com-chilipeppr-widget-gcode"], function (gcode) {
     //testJumpToLine();
     
     // force widget to set width to test css
-    $('#com-chilipeppr-widget-gcodeviewer').css('width', '300px');
-    //$('#com-chilipeppr-widget-gcodeviewer').css('padding', '20px');
+    $('#com-chilipeppr-widget-gcodeviewer').css('width', '350px');
+    $('body').css('padding', '20px');
 
 } /*end_test*/ );
 
