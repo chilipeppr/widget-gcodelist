@@ -267,10 +267,10 @@ requirejs.config({
     paths: {
         //jqueryui: '//chilipeppr.com/js/jquery-ui-1.10.4/ui/minified/jquery.ui.core.min',
         //jqueryuiResizeable: '//chilipeppr.com/js/jquery-ui-1.10.4/ui/minified/jquery.ui.resizable.min',
-        jqueryui: '//chilipeppr.com/js/jquery-ui-1.10.4/ui/jquery.ui.core',
-        jqueryuiWidget: '//chilipeppr.com/js/jquery-ui-1.10.4/ui/jquery.ui.widget',
-        jqueryuiMouse: '//chilipeppr.com/js/jquery-ui-1.10.4/ui/jquery.ui.mouse',
-        jqueryuiResizeable: '//chilipeppr.com/js/jquery-ui-1.10.4/ui/jquery.ui.resizable',
+        jqueryui: '//i2dcui.appspot.com/js/jquery-ui-1.10.4/ui/jquery.ui.core',
+        jqueryuiWidget: '//i2dcui.appspot.com/js/jquery-ui-1.10.4/ui/jquery.ui.widget',
+        jqueryuiMouse: '//i2dcui.appspot.com/js/jquery-ui-1.10.4/ui/jquery.ui.mouse',
+        jqueryuiResizeable: '//i2dcui.appspot.com/js/jquery-ui-1.10.4/ui/jquery.ui.resizable',
         waypoints: '//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.4/waypoints.min',
         //jqueryWaypointsInfinite: '//cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.4/waypoints-infinite.min'
     },
@@ -427,6 +427,7 @@ cprequire_test(["inline:com-chilipeppr-widget-gcode"], function (gcode) {
     
     // force widget to set width to test css
     $('#com-chilipeppr-widget-gcodeviewer').css('width', '300px');
+    //$('#com-chilipeppr-widget-gcodeviewer').css('padding', '20px');
 
 } /*end_test*/ );
 
