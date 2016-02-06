@@ -3190,7 +3190,10 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     var curEstDurMins = this.obj3d.userData.lines[indexOfLineAt].p2.timeMinsSum;
                     var estDurMins = lastLine.p2.timeMinsSum;
                     var remainMins = estDurMins - curEstDurMins;
-                    var str = this.toHHMMSS(remainMins * 60); // expect seconds
+                    var str = "-";
+                    if (remainMins > 0) {
+                        str = this.toHHMMSS(remainMins * 60); // expect seconds
+                    }
                     $('#com-chilipeppr-widget-gcodeviewer #gcode-time-estremain').text(str);
                 }
             }
