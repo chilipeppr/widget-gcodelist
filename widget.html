@@ -91,8 +91,8 @@
         </div>
         <div class="alert alert-info alert-dismissible com-chilipeppr-widget-gcode-toolchange hidden" role="alert" style="margin:0;border-radius:0;">
             <button type="button" class="close" xdata-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <p style="font-size:smaller;padding-bottom:6px;">You are in tool change mode. You may jog to move the tool around and/or reset your Z zero position. Put your motors at full power if you don't want them to move while you change your tool. Make sure to issue the following Gcode to get back
-                to the position just prior to your tool change "<span class="com-chilipeppr-widget-gcode-toolchange-cmd">G0 X- Y- Z-</span>".
+            <p style="font-size:smaller;padding-bottom:6px;">You are in tool change mode. Change to tool <b><span id="com-chilipeppr-widget-gcode-toolnumber1">T??</span></b>. You may jog to move the tool around and/or reset your Z zero position. Put your motors at full power if you don't want them to move while you change your tool. Make sure to issue the following Gcode to get back
+                to the position just prior to your tool change "<span class="com-chilipeppr-widget-gcode-toolchange-cmd">G0 X? Y? Z?</span>".
             </p>
             <div class="btn-group-vertical">
                 <button class="btn btn-xs btn-default com-chilipeppr-widget-gcode-toolchange-energize" xstyle="width:100%;">Motors Full Power</button>
@@ -415,6 +415,16 @@
                                 </input>
                             </label>
                         </div>
+                        
+                         <p style="padding-top:6px;">To send Gcode after pausing, add it here. This can be for moving to a tool change position.</p>
+                        <div class="input-group" style="width:300px;">
+                            <textarea class="form-control" id="com-chilipeppr-widget-gcode-option-sendonM6" placeholder="Gcode"></textarea>
+                        </div>
+                         <p style="padding-top:6px;">To send Gcode before unpausing, add it here. This can be for moving back to the original position.</p>
+                        <div class="input-group" style="width:300px;">
+                            <textarea class="form-control" id="com-chilipeppr-widget-gcode-option-sendoffM6" placeholder="Gcode"></textarea>
+                        </div>
+                     
 
                         <p class="options-heading" style="padding-top:16px;">Pre-Process Gcode</p>
 
@@ -459,7 +469,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Tool Change (M6)</h4>
+                    <h4 class="modal-title" id="com-chilipeppr-widget-gcode-toolchange-heading">Tool Change (M6 <span id="com-chilipeppr-widget-gcode-toolnumber2">T??</span>)</h4>
                 </div>
                 <div class="modal-body">
                     <p>We reached a line in the Gcode that contains an M6 command. If you are manually changing tools then dismiss this dialog, change your tool, and hit the pause button to unpause your job.</p>
