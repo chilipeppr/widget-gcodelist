@@ -175,7 +175,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
         fiddleurl: "(auto fill by runme.js)", // The edit URL. This can be auto-filled by runme.js in Cloud9 if you'd like, or just define it on your own to help people know where they can edit/fork your widget
         githuburl: "(auto fill by runme.js)", // The backing github repo
         testurl: "(auto fill by runme.js)",   // The standalone working widget so can view it working by itself
-        name: "Widget / Gcode v3",
+        name: "Widget / Gcode v4",
         desc: "The Gcode widget shows you the Gcode loaded into your workspace, lets you send it to the serial port, get back per line status, see an estimated length of time to execute the Gcode, navigate to the XYZ position of a specific line, and much more.",
         publish: {
             '/onplay': "When user hits play button",
@@ -445,6 +445,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 $('#com-chilipeppr-widget-gcode-option-pauseOnM6').prop('checked', true);
                 $('#com-chilipeppr-widget-gcode-option-pauseOnM6-alt').prop('checked', true);
             }
+            $('#com-chilipeppr-widget-gcode-option-sendonM6').val(this.options.sendOnM6);
+            $('#com-chilipeppr-widget-gcode-option-sendoffM6').val(this.options.sendOffM6);
 
             if (this.options.preUpload) {
                 var opt = ["none", "100", "1000", "10000", "20000"];
@@ -536,7 +538,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             var that = this;
             console.log("saveOptionsModal");
 
-            var whenPlay, perRow, perRow3dType, delayPerLine, pauseOnM6, showBody, preUpload, multiLineMode, multiLines, ppsOnPlayFlush, ppsOnStopFeedhold, ppsOnPauseFeedhold, ppsOnUnpauseResume, removeemptylines, addlinenums;
+            var whenPlay, perRow, perRow3dType, delayPerLine, pauseOnM6, sendOnM6, sendOffM6, showBody, preUpload, multiLineMode, multiLines, ppsOnPlayFlush, ppsOnStopFeedhold, ppsOnPauseFeedhold, ppsOnUnpauseResume, removeemptylines, addlinenums;
             if ($('#com-chilipeppr-widget-gcode-option-whenplay-serial').is(':checked'))
                 whenPlay = "serial";
             else if ($('#com-chilipeppr-widget-gcode-option-whenplay-3d').is(':checked'))
@@ -553,6 +555,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 pauseOnM6 = true;
             else
                 pauseOnM6 = false;
+            sendOnM6 = $('#com-chilipeppr-widget-gcode-option-sendonM6').val();
+            sendOffM6 = $('#com-chilipeppr-widget-gcode-option-sendoffM6').val();
             if ($('#com-chilipeppr-widget-gcode-option-removeemptylines').is(':checked'))
                 removeemptylines = true;
             else
@@ -593,6 +597,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 perRow3dType: perRow3dType,
                 delayPerLine: that.delayPerLine,
                 pauseOnM6: pauseOnM6,
+                sendOnM6: sendOnM6,
+                sendOffM6: sendOffM6,
                 showBody: showBody,
                 preUpload: preUpload,
                 multiLineMode: multiLineMode,
@@ -662,12 +668,22 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             });
 
             // close btn
-            $('.com-chilipeppr-widget-gcode-toolchange .close').click(this.hideToolChangeDiv.bind(this));
+            $('.com-chilipeppr-widget-gcode-toolchange .close').click(this.hideToolChangeDiv.bind(this, false));
 
         },
         isInToolChangeMode: false, // track whether we're showing tool change div
+        toolNumber: null, // tool number to show in tool change div
         toolChangeRepositionCmd: null, // gcode to reposition to prior location before tool change (in case they jog)
         showToolChangeModal: function() {
+            console.log("Switching to tool ",this.toolNumber);
+            if (!this.toolNumber)
+            {
+                this.toolNumber = "Unknown Tool";
+            }
+            
+            $('#com-chilipeppr-widget-gcode-toolnumber1').text(this.toolNumber);
+            $('#com-chilipeppr-widget-gcode-toolnumber2').text(this.toolNumber);
+
             if ($('#com-chilipeppr-widget-gcode-option-pauseOnM6').is(':checked'))
                 $('#com-chilipeppr-widget-gcode-option-pauseOnM6-alt').prop('checked', true);
             else
@@ -680,10 +696,36 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             $('#com-chilipeppr-widget-gcode-body').addClass('gcode-short-mode');
             $('.com-chilipeppr-widget-gcode-toolchange').removeClass('hidden');
             $(window).trigger('resize');
+            
+            // get active coords system and last position
             var line = this.currentLine;
             this.getXyzCoordsForLine(line, function(pos) {
-                this.toolChangeRepositionCmd = "G0 X" + pos.x + " Y" + pos.y + " Z" + pos.z;
-                $('.com-chilipeppr-widget-gcode-toolchange-cmd').text(this.toolChangeRepositionCmd);
+                console.log("getXyzCoordsForLine returned pos ", pos);
+
+                this.getCoordFromController(function(coords) {
+                    console.log("getCoordFromController returned coords ", coords);
+
+                    // now assemble the reposition command
+                    if (coords.coord)
+                    {
+                        this.toolChangeRepositionCmd = coords.coord;
+                    }
+                    else
+                    {
+                        this.toolChangeRepositionCmd = "";
+                    }
+                    this.toolChangeRepositionCmd = this.toolChangeRepositionCmd + " G0 X" + pos.x + " Y" + pos.y + " Z" + pos.z;
+                    
+                    $('.com-chilipeppr-widget-gcode-toolchange-cmd').text(this.toolChangeRepositionCmd);
+
+                    // Send gcode if defined
+                    var sendOnM6 = $('#com-chilipeppr-widget-gcode-option-sendonM6').val();
+                    if (sendOnM6)
+                    {
+                        console.log("SendOnM6: ",sendOnM6);
+                        chilipeppr.publish("/com-chilipeppr-widget-serialport/send", sendOnM6 + '\n');
+                    }   
+                });
             });
 
             // get the current motor config, when we get callback, setup the "set motors to prev setting" btn
@@ -693,11 +735,24 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             $('#com-chilipeppr-widget-gcode-toolchange-modal').modal('hide');
             $(window).trigger('resize');
         },
-        hideToolChangeDiv: function() {
+        hideToolChangeDiv: function(wasPaused) {
             console.log("hideToolChangeDiv");
             if (this.isInToolChangeMode) {
                 console.log("was in toolChangeMode");
                 this.isInToolChangeMode = false;
+                
+                if (wasPaused)
+                {
+                    // Send gcode if defined
+                    // @todo Should NOT do this if we stopped rather than paused
+                    var sendOffM6 = $('#com-chilipeppr-widget-gcode-option-sendoffM6').val();
+                    if (sendOffM6)
+                    {
+                        console.log("SendOffM6: ",sendOffM6);
+                        chilipeppr.publish("/com-chilipeppr-widget-serialport/send", sendOffM6 + '\n');
+                    }
+                }
+
                 $('#com-chilipeppr-widget-gcode-body').removeClass('gcode-short-mode');
                 $('.com-chilipeppr-widget-gcode-toolchange').addClass('hidden');
                 $(window).trigger('resize');
@@ -725,6 +780,32 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 txt = "G21\n"+ txt; //add G21 to first line of gcode file
             this.isDirtyUnits = true;
             this.onFileLoaded(txt,info,skipLocalStore); //send new txt to onFileLoaded
+        },
+        getCoordFromControllerRecvCallback: null,
+        getCoordFromController: function(callback) {
+            this.getCoordFromControllerRecvCallback = callback;
+            console.log("getCoordFromController");
+	    
+            chilipeppr.subscribe("/com-chilipeppr-interface-cnccontroller/coords",
+				 this, this.getCoordFromControllerRecv);
+            chilipeppr.publish("/com-chilipeppr-interface-cnccontroller/requestCoords", "");
+        },
+        getCoordFromControllerRecv: function(coords) {
+            // unsub so we don't get anymore callbacks on this
+            chilipeppr.unsubscribe("/com-chilipeppr-widget-cnccontroller/coords",
+				   this.getCoordFromControllerRecv);
+
+            if (this.getCoordFromControllerRecvCallback)
+            {
+                // call the callback and then null it so we only call it once
+                console.log("getCoordFromControllerRecv ", coords);
+                this.getCoordFromControllerRecvCallback(coords);
+                this.getCoordFromControllerRecvCallback = null;
+            }
+            else
+            {
+                console.log("GetCoordFromControllerRecv called with null callback... shouldn't happen")
+            }
         },
         getMotorConfigCallback: function(data) {
         },
@@ -1263,7 +1344,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
         },
         onStepBack: function(evt) {
             console.log("onStepBack. ");
-            if (evt) this.hideToolChangeDiv();
+            if (evt) this.hideToolChangeDiv(false);
             this.currentLine = this.currentLine - 2;
             if (this.currentLine < 0) this.currentLine = 0;
             this.isPlayStep = true;
@@ -1271,7 +1352,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
         },
         onStepFwd: function(evt) {
             console.log("onStepFwd");
-            if (evt) this.hideToolChangeDiv();
+            if (evt) this.hideToolChangeDiv(false);
             this.isPlayStep = true;
             this.onPlayNextLine();
         },
@@ -1281,7 +1362,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 this.isPaused = false;
                 $('#com-chilipeppr-widget-gcode-pause').removeClass("active");
 
-                if (event) this.hideToolChangeDiv();
+                if (event) this.hideToolChangeDiv(true);
 
                 if (event && this.options.ppsOnUnpauseResume)
                     chilipeppr.publish("/com-chilipeppr-widget-serialport/send", "~\n");
@@ -1342,7 +1423,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 $('#com-chilipeppr-widget-gcode-play').prop("disabled", false);
                 $('#com-chilipeppr-widget-gcode-stop').prop("disabled", true);
                 $('#com-chilipeppr-widget-gcode-pause').prop("disabled", true);
-                this.hideToolChangeDiv();
+                this.hideToolChangeDiv(false);
 
                 this.isPlaying = false;
                 this.isPaused = false;
@@ -1354,7 +1435,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     $('#com-chilipeppr-widget-gcode-play').prop("disabled", false);
                     $('#com-chilipeppr-widget-gcode-stop').prop("disabled", true);
                     $('#com-chilipeppr-widget-gcode-pause').prop("disabled", true);
-                    this.hideToolChangeDiv();
+                    this.hideToolChangeDiv(false);
                 }
                 
                 this.isPlaying = false;
@@ -1711,6 +1792,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 // yes, it's m6
                 // see if they want pause
                 if (this.options.pauseOnM6) {
+                    this.toolNumber = linegcode.match(/T\d+/ig)[0];
                     this.gotoLine(this.currentLine, true);
                     // pass a null event, but true for the isFromM6 parameter
                     this.onPause(null, true);
@@ -2394,6 +2476,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     
                     // see if M6 tool change command & user wants to pause on M6
                     if (linegcode.match(/M0?6/i) && this.options.pauseOnM6) {
+                        this.toolNumber = linegcode.match(/T\d+/ig)[0];
                         this.showToolChangeModal();
                     }
                     
@@ -2482,6 +2565,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     // see if M6 tool change command & user wants to pause on M6
                     //(just because controller errored out, user is still expecting a pause on M6 from the software)
                     if (linegcode.match(/M0?6/i) && this.options.pauseOnM6) {
+                        this.toolNumber = linegcode.match(/T\d+/ig)[0];
                         this.showToolChangeModal();
                     }
 
@@ -2584,6 +2668,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     
                     // see if M6 tool change command & user wants to pause on M6
                     if (linegcode.match(/M0?6/i) && this.options.pauseOnM6) {
+                        this.toolNumber = linegcode.match(/T\d+/ig)[0];
                         this.showToolChangeModal();
                     }
                     
