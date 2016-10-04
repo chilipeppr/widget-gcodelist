@@ -346,8 +346,11 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 lastLine = this.lastLineMarkedExecuted;
             
             var line = prompt("Please enter the line number to jump to.", lastLine);
-            
-            chilipeppr.publish("/com-chilipeppr-widget-gcode/jumpToLine", line);
+            var lineNum = parseInt(line);
+            if (lineNum > 0)
+                chilipeppr.publish("/com-chilipeppr-widget-gcode/jumpToLine", lineNum);
+            else
+                chilipeppr.publish("/com-chilipeppr-elem-flashmsg/flashmsg", "Error on Line Jump", "We had a problem parsing the line number you gave us.", 1000, true);
         },
         getEstimates: function() {
             var that = this;
