@@ -2608,6 +2608,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             // write it to the log
             //console.group("gcode widget - onExecute");
             console.log("onExecute data:", data);
+            console.log("onExecute lastLineMarkedExecuted:", this.lastLineMarkedExecuted,
+                " isInExecuteScrollToMode:", this.isInExecuteScrollToMode);
             
             // we can get onExecute methods called on first load
             // because they come in from sr commands, so if we're not
@@ -2616,8 +2618,15 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 //console.groupEnd();
                 return;
             }
+
+            // if we get something lower than our start, which is 1
+            // just ignore it. Need to do this before setting
+            // isInExecuteScrollToMode below or we'll think that we
+            // need to handle events we don't
+            if ('line' in item && item.line < 1) return;
             
             // make sure we're in onExecuted mode
+            var wasInExecuteScrollToMode = this.isInExecuteScrollToMode;
             this.isInExecuteScrollToMode = true;
             
             var item = data;
@@ -2631,18 +2640,11 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 // get id
                 var idnum = item.line;
                 
-                // if we get something lower than our start, which is 1
-                // just ignore it
-                if (idnum < 1) return;
-                
                 // ok, here's the deal, we only get status intervals every
                 // 250ms, which means we'll get a line number that could be
                 // many numbers beyond the last line we marked as "executed"
                 // so we have to fill in the gaps
-                if (this.lastLineMarkedExecuted == null)
-                    this.lastLineMarkedExecuted = 0;
                 
-                //console.log("onExecute. lastLineMarkedExecuted:", this.lastLineMarkedExecuted);
                 for (var markIndex = this.lastLineMarkedExecuted; markIndex < idnum; markIndex++) {
                     //console.log("onExecute. marking metaline as executed. markIndex:", markIndex, "metaLine:", this.metaLines[markIndex]);
                     if (this.metaLines[markIndex] == null) {
@@ -2658,30 +2660,39 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     // our id is 1-based, i.e. the row number
                     this.updateRowQueueStats(markIndex + 1);
                     
-                    // see if comment
-                    var linegcode = this.fileLines[markIndex];
-                    if (linegcode.match(/(\(.*\)|;.*$)/)) {
-                        // it's comment
-                        //var re = /\((.*)\)/;
-                        //re.exec(linegcode);
-                        var comment = RegExp.$1;
-                        //console.log("onExecute. Found comment:", comment);
-                        chilipeppr.publish("/com-chilipeppr-elem-flashmsg/flashmsg", "Gcode Comment", comment, 3000, true);
-                    }
+                    // Only do this is we were inExecuteScrollToMode
+                    // before, otherwise onComplete has done it
+                    // already.
+                    if (wasInExecuteScrollToMode ||
+                        !this.metaLines[markIndex].isCompleted)
+                    {
+                        // this code really should be in a function since
+                        // onComplete does the same thing
+                        
+                        // see if comment
+                        var linegcode = this.fileLines[markIndex];
+                        if (linegcode.match(/(\(.*\)|;.*$)/)) {
+                            // it's comment
+                            //var re = /\((.*)\)/;
+                            //re.exec(linegcode);
+                            var comment = RegExp.$1;
+                            //console.log("onExecute. Found comment:", comment);
+                            chilipeppr.publish("/com-chilipeppr-elem-flashmsg/flashmsg", "Gcode Comment", comment, 3000, true);
+                        }
                     
-                    // see if M6 tool change command & user wants to pause on M6
-                    if (linegcode.match(/M0?6/i) && this.options.pauseOnM6) {
-                        this.toolNumber = linegcode.match(/T\d+/ig)[0];
-                        this.showToolChangeModal();
-                    }
+                        // see if M6 tool change command & user wants to pause on M6
+                        if (linegcode.match(/M0?6/i) && this.options.pauseOnM6) {
+                            this.toolNumber = linegcode.match(/T\d+/ig)[0];
+                            this.showToolChangeModal();
+                        }
                     
-                    // see if chilipeppr_pause command
-                    if (linegcode.match(/chilipeppr_pause/i)) {
-                        this.onChiliPepprPauseOnExecute(
-                            { line: markIndex + 1, gcode: linegcode } 
-                        );
+                        // see if chilipeppr_pause command
+                        if (linegcode.match(/chilipeppr_pause/i)) {
+                            this.onChiliPepprPauseOnExecute(
+                                { line: markIndex + 1, gcode: linegcode } 
+                            );
+                        }
                     }
-                    
                     //console.log("metaLine after:", this.metaLines[markIndex]);
                 }
                 this.lastLineMarkedExecuted = markIndex;
