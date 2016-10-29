@@ -663,6 +663,9 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             $('.com-chilipeppr-widget-gcode-toolchange-sendgcode').click(function() {
                 chilipeppr.publish("/com-chilipeppr-widget-serialport/send", that.toolChangeRepositionCmd + '\n');
             });
+            $('.com-chilipeppr-widget-gcode-toolchange-g43').click(function() {
+                chilipeppr.publish("/com-chilipeppr-widget-serialport/send", that.toolChangeCmd + '\n');
+            });
             $('.com-chilipeppr-widget-gcode-toolchange-spindlestop').click(function() {
                 chilipeppr.publish("/com-chilipeppr-widget-serialport/send", 'M5\n');
             });
@@ -677,15 +680,22 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
         isInToolChangeMode: false, // track whether we're showing tool change div
         toolNumber: null, // tool number to show in tool change div
         toolChangeRepositionCmd: null, // gcode to reposition to prior location before tool change (in case they jog)
+        toolChangeCmd: null, // G43 command to change tool length offset
         showToolChangeModal: function() {
             console.log("Switching to tool ",this.toolNumber);
             if (!this.toolNumber)
             {
                 this.toolNumber = "Unknown Tool";
+                this.toolChangeCmd = "G49";
             }
-            
+            else
+            {
+                this.toolChangeCmd = "G43 " + this.toolNumber.replace("T","H");
+            }
             $('#com-chilipeppr-widget-gcode-toolnumber1').text(this.toolNumber);
             $('#com-chilipeppr-widget-gcode-toolnumber2').text(this.toolNumber);
+            $('#com-chilipeppr-widget-gcode-g43-cmd').text(this.toolChangeCmd);
+            
 
             if ($('#com-chilipeppr-widget-gcode-option-pauseOnM6').is(':checked'))
                 $('#com-chilipeppr-widget-gcode-option-pauseOnM6-alt').prop('checked', true);
