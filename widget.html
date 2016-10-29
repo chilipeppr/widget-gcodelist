@@ -92,7 +92,7 @@
         <div class="alert alert-info alert-dismissible com-chilipeppr-widget-gcode-toolchange hidden" role="alert" style="margin:0;border-radius:0;">
             <button type="button" class="close" xdata-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             <p style="font-size:smaller;padding-bottom:6px;">You are in tool change mode. Change to tool <b><span id="com-chilipeppr-widget-gcode-toolnumber1">T??</span></b>. You may jog to move the tool around and/or reset your Z zero position. Put your motors at full power if you don't want them to move while you change your tool. Make sure to issue the following Gcode to get back
-                to the position just prior to your tool change "<span class="com-chilipeppr-widget-gcode-toolchange-cmd">G0 X? Y? Z?</span>".
+                to the position just prior to your tool change "<span class="com-chilipeppr-widget-gcode-toolchange-reposition1">G0 X? Y? Z?</span>".
             </p>
             <div class="btn-group-vertical">
                 <button class="btn btn-xs btn-default com-chilipeppr-widget-gcode-toolchange-energize" xstyle="width:100%;">Motors Full Power</button>
@@ -101,7 +101,7 @@
                 <button class="btn btn-xs btn-default com-chilipeppr-widget-gcode-toolchange-spindlestart" xstyle="width:100%;">Start Spindle (M3)</button>
                 <button class="btn btn-xs btn-default com-chilipeppr-widget-gcode-toolchange-probe" xstyle="width:100%;">Run Probe to Zero Out Z Axis (G28.2 Z0)</button>
                 <button class="btn btn-xs btn-default com-chilipeppr-widget-gcode-toolchange-g43" xstyle="width:100%;">Send "<span id="com-chilipeppr-widget-gcode-g43-cmd">G43 T-</span>"</button>
-                <button class="btn btn-xs btn-default com-chilipeppr-widget-gcode-toolchange-sendgcode" xstyle="width:100%;">Send Reposition "<span class="com-chilipeppr-widget-gcode-toolchange-cmd">G0 X- Y- Z-</span>"</button>
+                <button class="btn btn-xs btn-default com-chilipeppr-widget-gcode-toolchange-sendgcode" xstyle="width:100%;">Send Reposition "<span class="com-chilipeppr-widget-gcode-toolchange-reposition2">G0 X- Y- Z-</span>"</button>
             </div>
         </div>
         <div id="com-chilipeppr-widget-gcode-body-wrapper">
