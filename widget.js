@@ -423,9 +423,19 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     if (!('addlinenums' in options))
                         options.addlinenums = true;
                 }
+                // Default new options for backwards compatibility
+                if (!('sendOnM6' in options)) {
+                    options.sendOnM6 = "";
+                }
+                if (!('sendOffM6' in options)) {
+                    options.sendOffM6 = "";
+                }
+                if (!('probeCmd' in options)) {
+                    options.probeCmd = "G28.2 Z0";
+                }
                 
             } else {
-                options = {whenPlay: "serial", perRow: "3d", perRow3dType: "goto", delayPerLine: this.delayPerLine, pauseOnM6: true, preUpload: 'none', multiLineMode: 'yes', multiLines: 50, ppsOnPlayFlush: false, ppsOnStopFeedhold: false, ppsOnPauseFeedhold: false, ppsOnUnpauseResume: false, removeemptylines: true, addlinenums: true};
+                options = {whenPlay: "serial", perRow: "3d", perRow3dType: "goto", delayPerLine: this.delayPerLine, pauseOnM6: true, preUpload: 'none', multiLineMode: 'yes', multiLines: 50, ppsOnPlayFlush: false, ppsOnStopFeedhold: false, ppsOnPauseFeedhold: false, ppsOnUnpauseResume: false, removeemptylines: true, addlinenums: true, sendOnM6: "", sendOffM6: "", probeCmd: "G28.2 Z0"};
             }
             this.options = options;
             console.log("options:", options);
@@ -450,6 +460,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             }
             $('#com-chilipeppr-widget-gcode-option-sendonM6').val(this.options.sendOnM6);
             $('#com-chilipeppr-widget-gcode-option-sendoffM6').val(this.options.sendOffM6);
+            $('#com-chilipeppr-widget-gcode-option-probe-cmd').val(this.options.probeCmd);
 
             if (this.options.preUpload) {
                 var opt = ["none", "100", "1000", "10000", "20000"];
@@ -541,7 +552,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             var that = this;
             console.log("saveOptionsModal");
 
-            var whenPlay, perRow, perRow3dType, delayPerLine, pauseOnM6, sendOnM6, sendOffM6, showBody, preUpload, multiLineMode, multiLines, ppsOnPlayFlush, ppsOnStopFeedhold, ppsOnPauseFeedhold, ppsOnUnpauseResume, removeemptylines, addlinenums;
+            var whenPlay, perRow, perRow3dType, delayPerLine, pauseOnM6, sendOnM6, sendOffM6, probeCmd, showBody, preUpload, multiLineMode, multiLines, ppsOnPlayFlush, ppsOnStopFeedhold, ppsOnPauseFeedhold, ppsOnUnpauseResume, removeemptylines, addlinenums;
             if ($('#com-chilipeppr-widget-gcode-option-whenplay-serial').is(':checked'))
                 whenPlay = "serial";
             else if ($('#com-chilipeppr-widget-gcode-option-whenplay-3d').is(':checked'))
@@ -560,6 +571,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 pauseOnM6 = false;
             sendOnM6 = $('#com-chilipeppr-widget-gcode-option-sendonM6').val();
             sendOffM6 = $('#com-chilipeppr-widget-gcode-option-sendoffM6').val();
+            probeCmd = $('#com-chilipeppr-widget-gcode-option-probe-cmd').val();
+        
             if ($('#com-chilipeppr-widget-gcode-option-removeemptylines').is(':checked'))
                 removeemptylines = true;
             else
@@ -602,6 +615,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 pauseOnM6: pauseOnM6,
                 sendOnM6: sendOnM6,
                 sendOffM6: sendOffM6,
+                probeCmd: probeCmd,
                 showBody: showBody,
                 preUpload: preUpload,
                 multiLineMode: multiLineMode,
@@ -658,7 +672,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 chilipeppr.publish('/com-chilipeppr-interface-cnccontroller/unEnergizeMotors', "");
             });
             $('.com-chilipeppr-widget-gcode-toolchange-probe').click(function() {
-                chilipeppr.publish("/com-chilipeppr-widget-serialport/send", 'G28.2 Z0\n');
+                chilipeppr.publish("/com-chilipeppr-widget-serialport/send", that.options.probeCmd + '\n');
             });
             $('.com-chilipeppr-widget-gcode-toolchange-sendgcode').click(function() {
                 chilipeppr.publish("/com-chilipeppr-widget-serialport/send", that.toolChangeRepositionCmd + '\n');
