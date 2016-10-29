@@ -743,7 +743,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     }
                     this.toolChangeRepositionCmd = this.toolChangeRepositionCmd + " G0 X" + pos.x + " Y" + pos.y + " Z" + pos.z;
                     
-                    $('.com-chilipeppr-widget-gcode-toolchange-cmd').text(this.toolChangeRepositionCmd);
+                    $('.com-chilipeppr-widget-gcode-toolchange-reposition1').text(this.toolChangeRepositionCmd);
+                    $('.com-chilipeppr-widget-gcode-toolchange-reposition2').text(this.toolChangeRepositionCmd);
 
                     // Send gcode if defined
                     var sendOnM6 = $('#com-chilipeppr-widget-gcode-option-sendonM6').val();
@@ -2647,13 +2648,13 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             // just ignore it. Need to do this before setting
             // isInExecuteScrollToMode below or we'll think that we
             // need to handle events we don't
+            var item = data;
             if ('line' in item && item.line < 1) return;
             
             // make sure we're in onExecuted mode
             var wasInExecuteScrollToMode = this.isInExecuteScrollToMode;
             this.isInExecuteScrollToMode = true;
             
-            var item = data;
             var msgEl;
             // check that id string is not null/empty and starts with
             // a g, cuz we make all our id's start with g
