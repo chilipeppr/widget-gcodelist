@@ -687,9 +687,19 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     if (!('addlinenums' in options))
                         options.addlinenums = true;
                 }
+                // Default new options for backwards compatibility
+                if (!('sendOnM6' in options)) {
+                    options.sendOnM6 = "";
+                }
+                if (!('sendOffM6' in options)) {
+                    options.sendOffM6 = "";
+                }
+                if (!('probeCmd' in options)) {
+                    options.probeCmd = "G28.2 Z0";
+                }
                 
             } else {
-                options = {whenPlay: "serial", perRow: "3d", perRow3dType: "goto", delayPerLine: this.delayPerLine, pauseOnM6: true, preUpload: 'none', multiLineMode: 'yes', multiLines: 50, ppsOnPlayFlush: false, ppsOnStopFeedhold: false, ppsOnPauseFeedhold: false, ppsOnUnpauseResume: false, removeemptylines: true, addlinenums: true};
+                options = {whenPlay: "serial", perRow: "3d", perRow3dType: "goto", delayPerLine: this.delayPerLine, pauseOnM6: true, preUpload: 'none', multiLineMode: 'yes', multiLines: 50, ppsOnPlayFlush: false, ppsOnStopFeedhold: false, ppsOnPauseFeedhold: false, ppsOnUnpauseResume: false, removeemptylines: true, addlinenums: true, sendOnM6: "", sendOffM6: "", probeCmd: "G28.2 Z0"};
             }
             this.options = options;
             console.log("options:", options);
@@ -3979,7 +3989,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                         </div>
                          <p style="padding-top:6px;">Definition of G-code to send as probe command in tool change dialog:</p>
                         <div class="input-group" style="width:300px;">
-                            <textarea class="form-control" id="com-chilipeppr-widget-gcode-option-probe-cmd" placeholder="Gcode"></textarea>
+                            <textarea class="form-control" id="com-chilipeppr-widget-gcode-option-probe-cmd" placeholder="Gcode">G28.2 Z0</textarea>
                         </div>
 
                         <p class="options-heading" style="padding-top:16px;">Pre-Process Gcode</p>

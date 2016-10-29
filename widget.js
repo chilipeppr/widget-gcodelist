@@ -423,9 +423,19 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     if (!('addlinenums' in options))
                         options.addlinenums = true;
                 }
+                // Default new options for backwards compatibility
+                if (!('sendOnM6' in options)) {
+                    options.sendOnM6 = "";
+                }
+                if (!('sendOffM6' in options)) {
+                    options.sendOffM6 = "";
+                }
+                if (!('probeCmd' in options)) {
+                    options.probeCmd = "G28.2 Z0";
+                }
                 
             } else {
-                options = {whenPlay: "serial", perRow: "3d", perRow3dType: "goto", delayPerLine: this.delayPerLine, pauseOnM6: true, preUpload: 'none', multiLineMode: 'yes', multiLines: 50, ppsOnPlayFlush: false, ppsOnStopFeedhold: false, ppsOnPauseFeedhold: false, ppsOnUnpauseResume: false, removeemptylines: true, addlinenums: true};
+                options = {whenPlay: "serial", perRow: "3d", perRow3dType: "goto", delayPerLine: this.delayPerLine, pauseOnM6: true, preUpload: 'none', multiLineMode: 'yes', multiLines: 50, ppsOnPlayFlush: false, ppsOnStopFeedhold: false, ppsOnPauseFeedhold: false, ppsOnUnpauseResume: false, removeemptylines: true, addlinenums: true, sendOnM6: "", sendOffM6: "", probeCmd: "G28.2 Z0"};
             }
             this.options = options;
             console.log("options:", options);
