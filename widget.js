@@ -141,10 +141,10 @@ cprequire_test(["inline:com-chilipeppr-widget-gcode"], function (gcode) {
             chilipeppr.publish("/com-chilipeppr-widget-serialport/onError", { Id: "g3" });   
         }, 7000);
     }
-    testOnQueue();
-    testOnWrite();
-    testOnComplete();
-    testOnExecute();
+    // testOnQueue();
+    // testOnWrite();
+    // testOnComplete();
+    // testOnExecute();
     //testOnError();
 
     var testPublishGcode = function() {
@@ -209,13 +209,13 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
         fileLines: [], // contains the gcode file as array per line
         metaLines: [], // stores meta data related to each line in fileLines
         metaObj: { // Default meta data object
-	    isSent: false,
+    	    isSent: false,
             isQueued: false,
             isWritten: false,
             isCompleted: false, // whether onComplete has processed it
             isError: false,
             isExecuted: false, // whether onExecute has processed it
-	    isDisplayed: false // whether onComplete or onExecute has reacted to it
+    	    isDisplayed: false // whether onComplete or onExecute has reacted to it
         },
         linesComplete: [],
         linesToShow: 50, // how many lines to show in the infinite scroll area
@@ -327,11 +327,163 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             
             this.setupJumpToLine();
             
+            this.setupSecondaryButtons();
+            
             // get estimated time duration. request this after a few
             // seconds to give best chance of 3d viewer being loaded
             setTimeout(this.getEstimates.bind(this), 5000);
 
             console.log(this.name + " done loading.");
+        },
+        /**
+         * Configure the "Feed Rate Override" button and the "Tool Changes" pulldown
+         */
+        setupSecondaryButtons: function() {
+            
+            // setup Feed Rate Override to toggle the actual region
+            $('.com-chilipeppr-widget-gcode-showfr').click(this.onToggleShowFeedRateOverride.bind(this));
+        },
+        onToggleShowFeedRateOverride: function() {
+            var btnEl = $('.com-chilipeppr-widget-gcode-showfr');
+            var regionEl = $('#com-chilipeppr-widget-gcode-feedrate');
+            if (btnEl.hasClass("active")) {
+                // it's showing, so hide it
+                regionEl.addClass("hidden");
+                // remove our active tag
+                btnEl.removeClass("active");
+            } else {
+                // it's hidden, so show it
+                regionEl.removeClass("hidden");
+                // show us as pressed in
+                btnEl.addClass("active");
+            }
+        },
+        /**
+         * This method scans the Gcode for tool changes and then populates the pulldown menu so
+         * you can easily jump to the changes in the file and continue where you left off.
+         */
+        toolChanges: {},
+        toolComments: {},
+        setupToolChanges: function() {
+            
+            // scan gcode for tool change info
+            
+            console.log("about to look for tool changes in this.fileLines. lines:", this.fileLines.length);
+            
+            for (var i = 0; i < this.fileLines.length; i++) {
+                var line = this.fileLines[i];
+                
+                // see if we have line where comment starts with
+                // look for something like:
+                // (T1 D=3.175 CR=0. - ZMIN=-4.2 - FLAT END MILL)
+                if (line.match(/\(T(\d+)\s+(.*)\)/i)) {
+                    var toolNum = parseInt(RegExp.$1);
+                    var toolComment = "T" + toolNum + " " + RegExp.$2;
+                    console.log("found tool comment. lineNum:", i, "toolNum:", toolNum, "comment:", toolComment, "line:", line);
+                    this.toolComments[toolNum] = {
+                        lineNum: i+1,
+                        toolNum: toolNum,
+                        toolComment: toolComment,
+                    }
+                }
+                
+                // look for M6 line
+                if (line.match(/M6|M06|M006/i)) {
+                    var toolNum;
+                    if (line.match(/T(\d+)/i)) {
+                        toolNum = parseInt(RegExp.$1);
+                    }
+                    this.toolChanges[(i+1)] = {
+                        lineNum: i+1,
+                        toolNum: toolNum,
+                    }
+                    console.log("found tool change. lineNum:", i, "line:", line);
+                }
+            }
+            
+            console.log("this.toolComments:", this.toolComments);
+            console.log("this.toolChanges:", this.toolChanges);
+            
+            // now look for a comment up to 10 lines above the M6 tool change line to see if any comments are there
+            var keys = Object.keys(this.toolChanges).sort();
+            console.log("looking for comments above m6 to get a label for this tool change. keys:", keys);
+            for (var i = 0; i < keys.length; i++) {
+                var toolChangeLineNum = keys[i];
+                var lookBackToLineNum = toolChangeLineNum - 10;
+                if (lookBackToLineNum < 1) lookBackToLineNum = 1; // first line
+                
+                // now look backwards until we've seen just 1 comment
+                for (var lineNum = toolChangeLineNum; lineNum >= lookBackToLineNum; lineNum--) {
+                    var line = this.fileLines[lineNum - 1]; // index of array is 1 less than lineNum
+                    console.log("looking at lineNum:", lineNum, "line:", line);
+                    // see if comment
+                    if ( line.match(/\((.*?)\)/) || line.match(/;(.*)/) ) {
+                        var comment = RegExp.$1;
+                        console.log("found comment:", comment);
+                        
+                        // stick comment into toolChanges
+                        this.toolChanges[toolChangeLineNum].sectionComment = comment;
+                        
+                        // break since we found one
+                        break;
+                    }
+                }
+            }
+            
+            console.log("after adding section comments. this.toolChanges:", this.toolChanges);
+            
+            // now populate the pulldown
+            var keys = Object.keys(this.toolChanges).sort();
+            var ddEl = $('.com-chilipeppr-widget-gcode-menuToolChange');
+            
+            // wipe menu
+            ddEl.html('<li role="presentation" class="dropdown-header com-chilipeppr-widget-gcode-toolchanges-hdr">Click the item below to jump to the line in the Gcode so you can start playing from there</li>');
+            
+            if (keys.length == 0) {
+                // insert that no tool changes
+                var menuEl = $('<li role="presentation" class="dropdown-header com-chilipeppr-widget-gcode-toolchanges-hdr">(No Tool Changes in Gcode)</li>');
+            }
+            
+            for (var i = 0; i < keys.length; i++) {
+                var toolChange = this.toolChanges[keys[i]];
+                var tool = this.toolComments[toolChange.toolNum];
+                
+                var str = "";
+                
+                if ('sectionComment' in toolChange) {
+                    str = str + '<span class="small" style="font-weight:bold;">' + toolChange.sectionComment + '</span><br>';
+                }
+
+                
+                str = str + "Tool " + toolChange.toolNum + " on line " + toolChange.lineNum;
+                
+                if (tool != null) {
+                    str = str + "<br>" + tool.toolComment;
+                }
+                
+                
+                var menuEl = $('<li><a class="" style="cursor:pointer;">' + str + '</a></li>');
+                menuEl.click(toolChange, this.onToolChangesSelectMenu.bind(this));
+                ddEl.append(menuEl);   
+                console.log("added Tool Changes menu item:", menuEl);
+            }
+            
+        },
+        /**
+         * Called when user clicks a Tool Changes menu item. They want to jump to that line.
+         */
+        onToolChangesSelectMenu: function(data) {
+            console.log("got click on Tool Changes menu. data:", data.data);
+            var toolInfo = data.data;
+            // u get data like: {lineNum: 11, toolNum: 1}
+            this.jumpToLine(toolInfo.lineNum);
+            
+        },
+        /**
+         * This method is called after the Gcode file is loaded so you can do some post-processing.
+         */
+        onAfterGcodeFileLoaded: function() {
+            this.setupToolChanges();
         },
         setupJumpToLine: function() {
             $('#com-chilipeppr-widget-gcode-jumptoline').click(this.onJumpToLine.bind(this));
@@ -994,7 +1146,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             var that = this;
             chilipeppr.load("http://fiddle.jshell.net/chilipeppr/zMbL9/show/light/", function () {
                 require(['inline:com-chilipeppr-elem-pubsubviewer'], function (pubsubviewer) {
-                    pubsubviewer.attachTo($(topCssSelector + ' .panel-heading .dropdown-menu'), that);
+                    pubsubviewer.attachTo($(topCssSelector + ' .panel-heading .pubsub-dropdown-menu'), that);
                 });
             });
 
@@ -2129,15 +2281,24 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 // seconds to give best chance of 3d viewer being loaded
                 setTimeout(this.getEstimates.bind(this), 1000);
                 
+                // now call our post opening call
+                console.log("tool change will get called in 3.5secs");
+                setTimeout(this.onAfterGcodeFileLoaded.bind(this), 4500);
+
                 // we return false to tell pubsub that no further
                 // listeners should parse this onDropped because we just
                 // reissued it
                 return false;
-            }
+            } else {
             
-            // get estimated time duration. request this after a few
-            // seconds to give best chance of 3d viewer being loaded
-            setTimeout(this.getEstimates.bind(this), 1000);
+                // get estimated time duration. request this after a few
+                // seconds to give best chance of 3d viewer being loaded
+                setTimeout(this.getEstimates.bind(this), 1000);
+                
+                // now call our post opening call
+                console.log("tool change will get called in 3.5secs");
+                setTimeout(this.onAfterGcodeFileLoaded.bind(this), 3500);
+            }
         },
         resendGcodeToWorkspace: function() {
             // we need to send this gcode file back to the workspace

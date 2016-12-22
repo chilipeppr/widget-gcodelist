@@ -67,14 +67,31 @@
                     <button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown"> <span class="caret"></span>
 
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                    <ul class="dropdown-menu dropdown-menu-right pubsub-dropdown-menu" role="menu">
                         <!-- <li role="presentation" class="dropdown-header fork-name"></li>
                     <li><a href="" class="standalone" target="_blank">View Widget Standalone</a></li>
                     <li><a href="" class="fork" target="_blank">Fork Widget</a></li> -->
                     </ul>
                 </div>
             </div>
-            <div id="com-chilipeppr-widget-gcode-feedrate" class="" style="padding-top:5px;overflow:hidden;">
+            <div>
+                <button type="button" id="" class="btn btn-default btn-xs com-chilipeppr-widget-gcode-showfr">
+                    Feed Rate Override
+                </button>
+                <div class="btn-group">
+                    <button type="button" id="" class="btn btn-default btn-xs dropdown-toggle com-chilipeppr-widget-gcode-btnToolChange" data-toggle="dropdown"> 
+                        Tool Changes
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu xdropdown-menu-right com-chilipeppr-widget-gcode-menuToolChange" role="menu">
+                        <li role="presentation" class="dropdown-header com-chilipeppr-widget-gcode-toolchanges-hdr">(No Tool Changes in Gcode)</li>
+                        <!--<li><a href="" class="standalone" target="_blank">View Widget Standalone</a></li>-->
+                        <!--<li><a href="" class="fork" target="_blank">Fork Widget</a></li>-->
+                    </ul>
+                </div>
+
+            </div>
+            <div id="com-chilipeppr-widget-gcode-feedrate" class="hidden" style="padding-top:5px;overflow:hidden;">
                 <div class="input-group input-group-sm" style=" "> <span class="input-group-btn ">
                 <button class="btn btn-default btn-xs" id="com-chilipeppr-widget-gcode-feedrate-adjust" type="button">Feedrate X</button></span>
 
