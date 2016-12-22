@@ -2283,7 +2283,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 
                 // now call our post opening call
                 console.log("tool change will get called in 3.5secs");
-                setTimeout(this.onAfterGcodeFileLoaded.bind(this), 4500);
+                setTimeout(this.onAfterGcodeFileLoaded.bind(this), 1500);
 
                 // we return false to tell pubsub that no further
                 // listeners should parse this onDropped because we just
@@ -2297,7 +2297,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 
                 // now call our post opening call
                 console.log("tool change will get called in 3.5secs");
-                setTimeout(this.onAfterGcodeFileLoaded.bind(this), 3500);
+                setTimeout(this.onAfterGcodeFileLoaded.bind(this), 1500);
             }
         },
         resendGcodeToWorkspace: function() {
