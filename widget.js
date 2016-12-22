@@ -363,12 +363,17 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
          * you can easily jump to the changes in the file and continue where you left off.
          */
         toolChanges: {},
+        toolChangesKeys: [], // need to store keys in own array cuz keys in javascript are strings and we wants ints
         toolComments: {},
         setupToolChanges: function() {
             
             // scan gcode for tool change info
             
             console.log("about to look for tool changes in this.fileLines. lines:", this.fileLines.length);
+            
+            this.toolComments = {};
+            this.toolChanges = {};
+            this.toolChangesKeys = [];
             
             for (var i = 0; i < this.fileLines.length; i++) {
                 var line = this.fileLines[i];
@@ -396,7 +401,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     this.toolChanges[(i+1)] = {
                         lineNum: i+1,
                         toolNum: toolNum,
-                    }
+                    };
+                    this.toolChangesKeys.push(i+1);
                     console.log("found tool change. lineNum:", i, "line:", line);
                 }
             }
@@ -405,7 +411,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             console.log("this.toolChanges:", this.toolChanges);
             
             // now look for a comment up to 10 lines above the M6 tool change line to see if any comments are there
-            var keys = Object.keys(this.toolChanges).sort();
+            var keys = this.toolChangesKeys; //Object.keys(this.toolChanges).sort();
             console.log("looking for comments above m6 to get a label for this tool change. keys:", keys);
             for (var i = 0; i < keys.length; i++) {
                 var toolChangeLineNum = keys[i];
@@ -433,11 +439,11 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             console.log("after adding section comments. this.toolChanges:", this.toolChanges);
             
             // now populate the pulldown
-            var keys = Object.keys(this.toolChanges).sort();
+            var keys = this.toolChangesKeys; //Object.keys(this.toolChanges).sort();
             var ddEl = $('.com-chilipeppr-widget-gcode-menuToolChange');
             
             // wipe menu
-            ddEl.html('<li role="presentation" class="dropdown-header com-chilipeppr-widget-gcode-toolchanges-hdr">Click the item below to jump to the line in the Gcode so you can start playing from there</li>');
+            ddEl.html('<li role="presentation" class="dropdown-header com-chilipeppr-widget-gcode-toolchanges-hdr">Click the item below to jump to the line in the Gcode so you can start playing from there.</li>');
             
             if (keys.length == 0) {
                 // insert that no tool changes
@@ -2257,7 +2263,7 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                     if (e.name === 'QUOTA_EXCEEDED_ERR' || e.name == "QuotaExceededError" || e.code == 22 || e.name == "NS_ERROR_DOM_QUOTA_REACHED" || e.code == 1014) {
                         //this.sceneRemove(this.object);
                         // show err dialog
-                        $('#com-chilipeppr-widget-gcode-outofspace').modal();
+                        // $('#com-chilipeppr-widget-gcode-outofspace').modal();
                         console.error("Gcode Widget. out of local storage space, but letting user proceed. err:", e);
                         
                     } else {
