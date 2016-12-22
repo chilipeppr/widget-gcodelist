@@ -715,6 +715,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             if (keys.length == 0) {
                 // insert that no tool changes
                 var menuEl = $('<li role="presentation" class="dropdown-header com-chilipeppr-widget-gcode-toolchanges-hdr">(No Tool Changes in Gcode)</li>');
+            
+                ddEl.append(menuEl);   
             }
             
             for (var i = 0; i < keys.length; i++) {
