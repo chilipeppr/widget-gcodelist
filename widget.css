@@ -1,5 +1,5 @@
 #root .btn:active, #root .btn.active {
-    box-shadow: inset 0 3px 5px rgba(0,0,0,0.825);
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.425);
 }
 #com-chilipeppr-widget-gcodeviewer {
 }
