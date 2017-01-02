@@ -225,7 +225,7 @@
             </table>
         </div>
         <!-- body wrapper com-chilipeppr-widget-gcode-body-wrapper -->
-        <div id="com-chilipeppr-widget-gcode-footer" class="panel-footer ">
+        <div id="com-chilipeppr-widget-gcode-footer" class="panel-footer " style="position:relative;">
             <div class="row ">
                 <div class="col-xs-12 stats-hdr" style="margin-bottom:5px;" data-toggle="popover" data-container="body" data-placement="auto top" data-trigger="hover click" data-delay="500" data-html="true" data-title="Explaining Status Steps"><span class="glyphicon glyphicon-ok gcode-sent"></span> Sent <span class="glyphicon glyphicon-ok gcode-queued"></span> Queued <span class="glyphicon glyphicon-ok gcode-written"></span> Written <span class="glyphicon glyphicon-ok gcode-completed"></span>                    Completed <span class="glyphicon glyphicon-ok gcode-executed"></span> Executed
                     <!-- <span class="glyphicon glyphicon-ok gcode-error"></span> Error/Unsupported Command --></div>
@@ -256,6 +256,9 @@
 
             </div>
 
+        </div>
+        <div class="alert alert-info com-chilipeppr-widget-gcode-startindicator hidden" style="position:absolute;left:0;right:0;bottom:0;margin-bottom:0;">
+            Starting play. Seeing if other widgets need to process anything...
         </div>
     </div>
     <div class="modal fade " id="com-chilipeppr-widget-gcode-modal" tabindex="-1" role="dialog">

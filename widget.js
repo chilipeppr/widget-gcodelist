@@ -164,6 +164,39 @@ cprequire_test(["inline:com-chilipeppr-widget-gcode"], function (gcode) {
     // force widget to set width to test css
     $('#com-chilipeppr-widget-gcodeviewer').css('width', '350px');
     $('body').css('padding', '20px');
+    
+    // test out the /onPlay and interrupting it
+    var testOnPlayInterrupt = function() {
+        var isDoInterrupt = true;
+        chilipeppr.subscribe("/com-chilipeppr-widget-gcode/onplay", this, function(event) {
+            console.log("got onPlay pubsub test for interrupt. event: ", event);
+            
+            if (isDoInterrupt) {
+            
+                console.log("onPlay pubsub test. CANCELLING EVENT.");
+                // then send a new /play about 5 seconds later to mimic an async interrupt
+                setTimeout(function() {
+                    // pretend we threw up a dialog box, let the user choose stuff, and then they move along
+                    // we have to mimic the user is hitting play to start the process again
+                    chilipeppr.publish("/com-chilipeppr-widget-gcode/play", event);
+                }, 5000);
+                
+                // set to false so next time in, we don't cancel
+                isDoInterrupt = false;
+            
+                // return false to cancel all subsequent calls
+                return false;
+            } else {
+                
+                // we get here after we resend the /play signal to the Gcode widget. when it gets that
+                // it starts the process again of a play and we should let it continue on since we already
+                // did our important work
+                console.log("onPlay pubsub test. Now allowing play to continue on.")
+                return true;
+            }
+        });
+    };
+    // testOnPlayInterrupt();
 
 } /*end_test*/ );
 
@@ -178,7 +211,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
         name: "Widget / Gcode v8",
         desc: "The Gcode widget shows you the Gcode loaded into your workspace, lets you send it to the serial port, get back per line status, see an estimated length of time to execute the Gcode, navigate to the XYZ position of a specific line, and much more.",
         publish: {
-            '/onplay': "When user hits play button",
+            // '/onplay': "When user hits play button",
+            '/onplay': "When user hits play button. This is fired before this widget starts playing to give subscribers a chance to cancel the play, or delay it, or interrupt it. For example, the Cayenn widget listens for this signal and interrupts you if there are Cayenn commands in your Gcode so it can send a ResetCtr to all Cayenn devices. The Cayenn widget needs to send all the resets before ChiliPeppr is allowed to play to make sure everything is in sync. Return a false from your subscribe callback to cancel the play.",
             '/onpause': "When user hits pause button. The payload is a true/false boolean indicating whether it is a pause or an unpause. This event also fires if a pause is triggered for a different reason like from an M6 command. In that case the 2nd paramater of the payload contains a string of \"m6\".",
             '/onstop': "When user hits stop button",
             '/resize' : "When we resize in case any other widget wants to listen to that so it can resize itself.",
@@ -241,6 +275,11 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 }
                     
             }
+            
+            // Added on 1/2/17 by JLauer so we can allow onPlay to get interrupted
+            // subscribe to our own /onPlay event at lowest priority so we get it last
+            // setting priority to 11 because default is 10 and lower values have higher priority
+            chilipeppr.subscribe("/com-chilipeppr-widget-gcode/onplay", this, this.onPlayAfter, 11);
             
             this.setupOptionsModal();
 
@@ -1656,12 +1695,37 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             this.feedrateEnable();
             
         },
+        /**
+         * The onPlay is called from the Play button (or other mechanism) and as of 1/2/17 it
+         * now fires off the /onPlay pubsub so that a Play can get interrupted. It then listens to it's own
+         * /onPlay publish event at the lowest priority so that it can play as the last step in the pubsub chain.
+         * This gives other widgets a chance to interrupt the play event.
+         */
+        onPlay: function(event) {
+            
+            console.log("got onPlay. this:", this, "event:", event);
+            
+            // indicate we're starting play in the UI
+            $('.com-chilipeppr-widget-gcode-startindicator').removeClass("hidden");
+            
+            // fire off pubsub signal for others to watch the play btn
+            var meta = { isPlayByUser: event ? true : false };
+            chilipeppr.publish("/com-chilipeppr-widget-gcode/onplay", meta);
+
+        },
         isResetMetaBeforePlay: false, // this is set to true after a play has been completed and done all the way to the end. usually we reset the meta data when user hits stop, but we want to let the user know all lines were completed after their job was done so we don't reset. however, if they hit play again we need to reset
         isJobDonePubSubSent: false, // track this so that we don't fire the end of job pubsub event more than once. this was needed because you could sleep your laptop after a job done, then unsleep, reconnect to cnc controller, get the line complete status again, and think the job just got done when it clearly didn't
-        onPlay: function (event) {
+        /**
+         * This is now called from pubsub, which means we publish our own /onPlay event when user hits button and then listen
+         * for the callback so that other widgets can interrupt the /onPlay if they have to. We get called last because
+         * we subscribe at the lowest priority.
+         */
+        onPlayAfter: function (event) {
             // loop thru each line and send gcode
-            console.log("got onPlay. this:", this, "event:", event);
+            console.log("got onPlayAfter. this:", this, "event:", event);
             //console.log(event);
+
+            $('.com-chilipeppr-widget-gcode-startindicator').addClass("hidden");
 
             // this is set to true after a play has been completed and done 
             // all the way to the end. usually we reset the meta data when 
@@ -1742,9 +1806,13 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
                 this.onPlayNextLine();
             }
 
+            // commented out on 1/2/17 by JLauer because we now fire this off before any play action occurs
+            // so others can interrupt
+            /*
             // fire off pubsub signal for others to watch the play btn
             var meta = { isPlayByUser: event ? true : false };
             chilipeppr.publish("/com-chilipeppr-widget-gcode/onplay", meta);
+            */
             
             return true;
         },
