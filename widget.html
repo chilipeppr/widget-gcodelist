@@ -36,45 +36,52 @@
     <!--Put HTML Contents of Widget Here-->
     <div id="com-chilipeppr-widget-gcodeviewer" class="panel panel-default com-chilipeppr-widget-gcode ">
         <div class="panel-heading">
-            <div class="" style="padding-bottom:10px;"><span class="panel-title">Gcode</span>
-                <span class="btn-groupplannerpause" data-toggle="popover" data-content="Sending is paused to prevent buffer overflow.">
+            <div class="pull-left">
+                <span class="panel-title">Gcode</span>
+                <div class="btn-groupplannerpause pull-right" data-toggle="popover" data-content="Sending is paused to prevent buffer overflow.">
                     <span disabled="true" class="plannerpauseindicator glyphicon glyphicon glyphicon-time btn btn-sm"></span>
-                </span>
-<div class="btn-toolbar" role="toolbar" style="position:absolute;right:0px;top:0px;padding:10px 15px;">
-                <div class="btn-group" style="margin-left:0px;">
-                    <button type="button" id="com-chilipeppr-widget-gcode-play" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-play"></span>
-
-                    </button>
-                    <button type="button" id="com-chilipeppr-widget-gcode-pause" disabled class="btn btn-default btn-xs"><span class="glyphicon glyphicon-pause"></span>
-
-                    </button>
-                    <button type="button" id="com-chilipeppr-widget-gcode-stop" disabled class="btn btn-default btn-xs"><span class="glyphicon glyphicon-stop"></span>
-
-                    </button>
-                    <button type="button" id="com-chilipeppr-widget-gcode-stepback" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-step-backward"></span>
-
-                    </button>
-                    <button type="button" id="com-chilipeppr-widget-gcode-stepfwd" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-step-forward"></span></button>
-                    <button type="button" id="com-chilipeppr-widget-gcode-jumptoline" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-plane"></span></button>
-
-                    <button type="button" id="com-chilipeppr-widget-gcode-btnoptions" class="btn btn-default btn-xs"><span class="glyphicon glyphicon-cog"></span></button>
                 </div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-xs btn-default hidebody"><span class="glyphicon glyphicon-chevron-up"></span></button>
-                </div>
-
-                <div class="btn-group">
-                    <button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown"> <span class="caret"></span>
-
+            </div>
+            <div class="btn-toolbar" role="toolbar">
+                <div class="btn-group pull-right">
+                    <button type="button" class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">
+                        <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-right pubsub-dropdown-menu" role="menu">
                         <!-- <li role="presentation" class="dropdown-header fork-name"></li>
-                    <li><a href="" class="standalone" target="_blank">View Widget Standalone</a></li>
-                    <li><a href="" class="fork" target="_blank">Fork Widget</a></li> -->
+                        <li><a href="" class="standalone" target="_blank">View Widget Standalone</a></li>
+                        <li><a href="" class="fork" target="_blank">Fork Widget</a></li> -->
                     </ul>
                 </div>
+                <div class="btn-group pull-right">
+                    <button type="button" class="btn btn-xs btn-default hidebody">
+                        <span class="glyphicon glyphicon-chevron-up"></span>
+                    </button>
+                </div>
+                <div class="btn-group pull-center" style="margin-right:10px;">
+                    <button type="button" id="com-chilipeppr-widget-gcode-play" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-play"></span>
+                    </button>
+                    <button type="button" id="com-chilipeppr-widget-gcode-pause" disabled class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-pause"></span>
+                    </button>
+                    <button type="button" id="com-chilipeppr-widget-gcode-stop" disabled class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-stop"></span>
+                    </button>
+                    <button type="button" id="com-chilipeppr-widget-gcode-stepback" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-step-backward"></span>
+                    </button>
+                    <button type="button" id="com-chilipeppr-widget-gcode-stepfwd" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-step-forward"></span>
+                    </button>
+                    <button type="button" id="com-chilipeppr-widget-gcode-jumptoline" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-plane"></span>
+                    </button>
+                    <button type="button" id="com-chilipeppr-widget-gcode-btnoptions" class="btn btn-default btn-xs">
+                        <span class="glyphicon glyphicon-cog"></span>
+                    </button>
+                </div>
             </div>
-</div>
             <div>
                 <button type="button" id="" class="btn btn-default btn-xs com-chilipeppr-widget-gcode-showfr">
                     Feed Rate Override
@@ -90,7 +97,6 @@
                         <!--<li><a href="" class="fork" target="_blank">Fork Widget</a></li>-->
                     </ul>
                 </div>
-
             </div>
             <div id="com-chilipeppr-widget-gcode-feedrate" class="hidden" style="padding-top:5px;overflow:hidden;">
                 <div class="input-group input-group-sm" style=" "> <span class="input-group-btn ">
@@ -105,7 +111,6 @@
                     </span>
                 </div>
             </div>
-
         </div>
         <div class="alert alert-info alert-dismissible com-chilipeppr-widget-gcode-toolchange hidden" role="alert" style="margin:0;border-radius:0;">
             <button type="button" class="close" xdata-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
