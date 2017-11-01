@@ -3476,7 +3476,8 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
         gcodeLoad: function (callback, context) {
             var that = this;
             chilipeppr.load("com-chilipeppr-elem-gcodedata",
-                "http://fiddle.jshell.net/chilipeppr/QPG2v/show/light/",
+                //"http://fiddle.jshell.net/chilipeppr/QPG2v/show/light/",
+                "http://raw.githubusercontent.com/chilipeppr/element-gcodedata/master/auto-generated-widget.html",
 
                 function () {
                     cprequire(["inline:com-chilipeppr-elem-gcodedata"], function (gcd) {
