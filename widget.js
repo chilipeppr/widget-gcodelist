@@ -42,7 +42,8 @@ cprequire_test(["inline:com-chilipeppr-widget-gcode"], function (gcode) {
 
     // add flash msg
     chilipeppr.load(
-        "http://fiddle.jshell.net/chilipeppr/90698kax/show/light",
+        // "http://fiddle.jshell.net/chilipeppr/90698kax/show/light",
+        "http://raw.githubusercontent.com/chilipeppr/element-flash/master/auto-generated-widget.html",
         function() {
             cprequire(
                 ['inline:com-chilipeppr-elem-flashmsg'],
@@ -59,7 +60,9 @@ cprequire_test(["inline:com-chilipeppr-widget-gcode"], function (gcode) {
     // http://jsfiddle.net/jlauer/Q654J/
 
     chilipeppr.load("dragdrop",
-        "http://fiddle.jshell.net/jlauer/Z9F6G/show/light/", function () {
+        // "http://fiddle.jshell.net/jlauer/Z9F6G/show/light/", 
+        "http://raw.githubusercontent.com/chilipeppr/elem-dragdrop/master/auto-generated-widget.html",
+        function () {
             require(["inline:com-chilipeppr-elem-dragdrop"], function (dd) {
                 console.log("inside require of dragdrop");
                 dd.init();
@@ -1191,7 +1194,10 @@ cpdefine("inline:com-chilipeppr-widget-gcode", ["chilipeppr_ready", "waypoints",
             // load the pubsub viewer / fork element which decorates our upper right pulldown
             // menu with the ability to see the pubsubs from this widget and the forking links
             var that = this;
-            chilipeppr.load("http://fiddle.jshell.net/chilipeppr/zMbL9/show/light/", function () {
+            chilipeppr.load(
+                // "http://fiddle.jshell.net/chilipeppr/zMbL9/show/light/", 
+                "http://raw.githubusercontent.com/chilipeppr/widget-pubsubviewer/master/auto-generated-widget.html", 
+                function () {
                 require(['inline:com-chilipeppr-elem-pubsubviewer'], function (pubsubviewer) {
                     pubsubviewer.attachTo($(topCssSelector + ' .panel-heading .pubsub-dropdown-menu'), that);
                 });
